@@ -119,9 +119,7 @@
 			nave.velocidade = 200;
 			
 			ativarTiro(true);
-			
 			criacaoInimigos();
-		
 			teclado.disparou(ENTER, pausarJogo);
 		}
 		function criacaoInimigos(){
@@ -133,13 +131,11 @@
 					
 					if(decorrido > 1000){
 						novoOvni();
-						this.ultimoOvni = agora;
-						
+						this.ultimoOvni = agora;	
 					}
 				}
 			};
 			animacao.novoProcessamento(criadorInimigos);
-			
 		}
 		function novoOvni(){
 			let imgOvni = imagens.ovni;

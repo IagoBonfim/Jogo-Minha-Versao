@@ -1,0 +1,93 @@
+<html>
+<head>
+	<title>Inimigos!</title>
+	<script src="animacao.js"></script>
+	<script src="teclado.js"></script>
+	<script src="nave.js"></script>
+	<script src="tiro.js"></script>
+	<script src="colisor.js"></script>
+	<script src="ovni.js"></script>
+	<script src='fundo.js'></script>
+</head>
+<body>
+	<canvas id="canvas_inimigos" width="500" height="500"></canvas>
+	<script>
+		let imgEspaco = new Image();
+		imgEspaco.src = 'fundo-espaco.png';
+		imgEspaco.onload = carregando;
+		
+		let imgEstrelas = new Image()
+		imgEstrelas.src = 'fundo-estrelas.png';
+		imgEstrelas.onload = carregando;
+		
+		let imgNuvens = new Image();
+		imgNuvens.src = 'fundo-nuvens.png';
+		imgNuvens.onload = carregando;
+		
+		let imgNave = new Image();
+		imgNave.src = 'nave.png';
+		imgNave.onload = carregando;
+		
+		let imgOvni = new Image();
+		imgOvni.src = 'ovni.png';
+		imgOvni.onload = carregando;
+		
+
+		let canvas = document.getElementById('canvas_inimigos');
+		let context = canvas.getContext('2d');
+		
+		let teclado = new Teclado(document);
+		let animacao = new Animacao(context);
+		
+		let fundo1 = new Fundo(context, imgEspaco);
+		fundo1.velocidade = 3;
+		animacao.novoSprite(fundo1);
+		
+		let fundo2 = new Fundo(context, imgEstrelas);
+		fundo2.velocidade =5;
+		animacao.novoSprite(fundo2);
+		
+		let fundo3 = new Fundo( context, imgNuvens);
+		fundo3.velocidade = 8;
+		animacao.novoSprite(fundo3);
+		
+		let nave = new Nave(context, teclado, imgNave);
+		animacao.novoSprite(nave);
+		
+		let colisor = new Colisor();
+		colisor.novoSprite(nave);
+			
+		teclado.disparou(ESPACO, function(){
+			nave.atirar();
+		});
+		
+		let carregadas = 0;
+		let total = 5;		
+		function carregando(){
+			carregadas++;
+			if (carregadas == total)
+				iniciar();
+		}
+		function iniciar(){	
+			nave.x = canvas.width / 2 - imgNave.width / 2;
+			nave.y = canvas.height - imgNave.height;
+			nave.velocidade = 5;
+			animacao.ligar();
+			
+			setInterval(novoOvni, 1000);
+		
+		function novoOvni(){
+		let ovni = new Ovni(context, imgOvni);
+			ovni.velocidade = Math.floor( 5 + Math.random() * (20 - 5 + 1));
+			ovni.x = Math.floor(Math.random() * (canvas.width - imgOvni.width + 1));
+			ovni.y = imgOvni.height;
+			animacao.novoSprite(ovni);
+			colisor.novoSprite(ovni);					
+		} 
+		function aleatorio(min, max){
+			return min + Math.floor(Math.random() * (max - min +1));
+		}
+		}
+	</script>
+</body>
+</html>

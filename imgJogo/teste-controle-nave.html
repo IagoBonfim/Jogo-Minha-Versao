@@ -1,0 +1,32 @@
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title> TEstando controle da Nave</title>
+	<script src="teclado.js"></script>
+	<script src="nave.js"></script>
+	<script src="animacao.js"></script>
+	<script src="tiro.js"></script>
+</head>
+<body>
+	<canvas id="canvas_nave" width="500" height="500"></canvas>
+	<script>
+		let canvas = document.getElementById('canvas_nave');
+		let context = canvas.getContext('2d');
+		
+		let teclado = new Teclado(document);
+		let animacao = new Animacao(context);
+		
+		let imgNave = new Image();
+		imgNave.src = 'nave.png';
+		let nave = new Nave(context, teclado, imgNave);
+		animacao.novoSprite(nave);
+		imgNave.onload = function(){
+			nave.x = canvas.width / 2 - imgNave.width / 2;
+			nave.y = canvas.height / 2 - imgNave.height / 2;
+			nave.velocidade = 5;
+			
+			animacao.ligar();
+		}
+	</script>
+</body>
+</html>

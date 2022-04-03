@@ -1,0 +1,194 @@
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title> Jogo de Nave</title>
+	<script src="script/animacao_Nova_Versao.js"></script>
+	<script src="script/teclado.js"></script>
+	<script src="script/Fundo.js"></script>
+	<script src="script/nave.js"></script>
+	<script src="script/ovni.js"></script>
+	<script src="script/colisor.js"></script>
+	<script src="script/tiro.js"></script>
+	<script src="script/spritesheet.js"></script>
+	<script src="script/explosao.js"></script>
+	<style>
+		#link_Jogar {
+			display: none;
+			color: yellow;
+			background: url(img/botao-jogar.png);
+			font-size: 20px;
+			font-family: sans-serif;
+			
+			text-decoration: none;
+			text-shadow: 2px 2px 5px black;
+			position: absolute;
+			left: 220px;
+			top: 330px;
+			width: 52px;
+			height: 26px;
+			padding: 23px 10px;
+		}
+	</style>
+</head>
+<body>
+	<canvas id='canvas_animacao' width="500" height="500"></canvas>
+	<a id="link_jogar" href='Jogo_de_Nave: iniciarJogo()'>JOGAR</a>
+	<script>
+		let canvas = document.getElementById('canvas_animacao');
+		let context = canvas.getContext('2d');
+		
+		let imagens, animacao, teclado, colisor, nave, criadorImagens;
+		let totalImagens = 0, carregadas = 0;
+		let musicaAcao; 
+		carregarImagens();
+		carregarMusicas();
+		function carregarImagens(){
+			imagens = {
+				espaco: 'img/fundo-espaco.png',
+				estrelas: 'img/fundo-estrelas.png',
+				nuvens: 'img/fundo-nuvens.png',
+				nave: 'img/nave-spritesheet.png',
+				ovni: 'img/ovni.png',
+				explosao: 'img/explosao.png',
+			};
+			for (var i in imagens){
+				let img = new Image();
+				img.src = '' + imagens[i];
+				img.onload = carregando;
+				totalImagens++;
+				imagens[i] = img;
+			}
+		}
+		function carregarMusicas(){
+			musicaAcao = new Audio();
+			musicaAcao.src = 'snd/musica-acao.mp3';
+			musicaAcao.load();
+			musicaAcao.volume = 0.8;
+			musicaAcao.loop = true;
+		}
+		function carregando(){
+			context.save();
+			context.drawImage(imagens.espaco, 0, 0 , canvas.width, 
+							  canvas.height);
+			
+			context.fillStyle = 'yellow';
+			context.strokeStyle = 'orange';
+			context.font = '50px sans-serif';
+			context.fillText('Carregando...', 100, 200);
+			context.strokeText('Carregando...', 100,200);
+			
+			carregadas++;
+			let tamanhoTotal = 300;
+			let tamanho = carregadas / totalImagens * tamanhoTotal;
+			context.fillStyle = 'yellow';
+			context.fillRect(100, 250, tamanho, 50);
+			context.restore();
+			
+			if(carregadas == totalImagens){
+				iniciarObjetos();
+				mostrarLinkJogar();
+			}
+		}
+		function iniciarObjetos(){
+			
+			animacao = new Animacao(context);
+			teclado = new Teclado(document);
+			colisor = new Colisor();
+			espaco = new Fundo(context, imagens.espaco);
+			estrelas = new Fundo(context, imagens.estrelas);
+			nuvens = new Fundo(context, imagens.nuvens);
+			nave = new Nave(context, teclado, imagens.nave, imagens.explosao);
+			
+			animacao.novoSprite(espaco);
+			animacao.novoSprite(estrelas);
+			animacao.novoSprite(nuvens);
+			animacao.novoSprite(nave);
+			
+			colisor.novoSprite(nave);
+			animacao.novoProcessamento(colisor);
+			
+			configuracoesIniciais();
+		}
+		function configuracoesIniciais(){
+			espaco.velocidade = 60;
+			estrelas.velocidade = 150;
+			nuvens.velocidade = 500;
+			
+			nave.x = canvas.width / 2 - 18;
+			nave.y = canvas.height - 48;
+			nave.velocidade = 200;
+			
+			ativarTiro(true);
+			
+			criacaoInimigos();
+		
+			teclado.disparou(ENTER, pausarJogo);
+		}
+		function criacaoInimigos(){
+			criadorInimigos = {
+				ultimoOvni: new Date().getTime(),
+				processar: function(){
+					let agora = new Date().getTime();
+					let decorrido = agora - this.ultimoOvni;
+					
+					if(decorrido > 1000){
+						novoOvni();
+						this.ultimoOvni = agora;
+						
+					}
+				}
+			};
+			animacao.novoProcessamento(criadorInimigos);
+			
+		}
+		function novoOvni(){
+			let imgOvni = imagens.ovni;
+			let ovni = new Ovni(context, imgOvni,imagens.explosao);
+			
+			ovni.velocidade = 
+				Math.floor( 5 + Math.random()* (20 - 5 + 1));
+			ovni.x = 
+				Math.floor(Math.random()* (canvas.width - imgOvni.width + 1));
+			ovni.y = -imgOvni.height;
+			animacao.novoSprite(ovni);
+			colisor.novoSprite(ovni);
+		}
+		function pausarJogo(){
+			if (animacao.ligado){
+				animacao.desligar();
+				ativarTiro(false);
+				
+				context.save();
+				context.fillStyle = 'yellow';
+				context.strokeStyle = 'orange';
+				context.font = '50px sans-serif';
+				context.fillText("Pausado", 160, 200);
+				context.strokeText("Pausado", 160, 200);
+				context.restore();
+			}else
+				
+				animacao.ligar();
+				ativarTiro(true);
+			}
+		function ativarTiro(ativar){
+			if (ativar){
+				teclado.disparou(ESPACO, function(){
+					nave.atirar();
+				});
+			}
+			else 
+				teclado.disparou(ESPACO, null);
+		}
+		function mostrarLinkJogar(){
+			document.getElementById('link_Jogar').style.display = 
+				'block';
+		}
+		function iniciarJogo(){
+			document.getElementById('link_Jogar').style.display = 
+				'none';
+			musicaAcao.play();
+			animacao.ligar();
+		}
+	</script>
+</body>
+</html>

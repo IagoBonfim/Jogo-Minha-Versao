@@ -9,6 +9,7 @@ function Nave(context, teclado, imagem, imgExplosao){
 	this.spritesheet.linha = 0;
 	this.spritesheet.intervalo = 100;
 	this.imgExplosao = imgExplosao;
+	this.vidasExtra = 3;
 }
 Nave.prototype ={
 	atualizar: function(){
@@ -66,11 +67,24 @@ Nave.prototype ={
 		this.animacao.novoSprite(exp1);
 		this.animacao.novoSprite(exp2);
 		
-		
-		exp1.fimDaExplosao = function(){ 
-			
-			this.animacao.desligar();
-			alert('GAME OVER!!');
+		let nave = this;
+		exp1.fimDaExplosao = function() {
+			nave.vidasExtra --;
+			if(nave.vidasExtra <= 0){
+				if(nave.acabaramVidas) nave.acabaramVidas();
+			}else{
+				nave.colisor.novoSprite(nave)
+				nave.animacao.novoSprite(nave);
+				
+				nave.posicionar();
+			}
+				
 		}
+		},
+	posicionar: function(){
+		let canvas = this.context.canvas;
+		this.x = canvas.width /2 -18;
+		this.y = canvas.height - 48;
 	}
+
 }
